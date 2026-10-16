@@ -1,0 +1,44 @@
+services:
+  panel:
+    build: .
+    container_name: tdf-botops-panel
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - tdf-internal
+    # The static UI does not receive secrets. Backend integration belongs behind the reverse proxy.
+
+  # Optional placeholders for the production integration layer.
+  # Enable these after adding your adapter/backend implementation.
+  # adapter:
+  #   image: your-registry/tdf-botops-adapter:latest
+  #   restart: unless-stopped
+  #   env_file: .env
+  #   expose: ["8787"]
+  #   volumes:
+  #     - sessions:/var/lib/tdf/sessions
+  #   networks: [tdf-internal]
+  # db:
+  #   image: postgres:16-alpine
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: tdf_botops
+  #     POSTGRES_USER: tdf
+  #     POSTGRES_PASSWORD: change-me
+  #   volumes:
+  #     - db_data:/var/lib/postgresql/data
+  #   networks: [tdf-internal]
+
+networks:
+  tdf-internal:
+    driver: bridge
+
+# volumes:
+#   sessions:
+#   db_data:
